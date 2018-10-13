@@ -34,21 +34,13 @@ void merged::Loop()
             if(y<0)
                 w=-1;
             if(b_mc<5)
-                profile[0]->Fill(pt_mc[j],w*cos(phi_mc-phiEP_mc));
+                profile[0]->Fill(pt_mc[j],w*v1);
             if( (b_mc>5)&&(b_mc<9) )
-                profile[1]->Fill(pt_mc[j],w*cos(phi_mc-phiEP_mc));
+                profile[1]->Fill(pt_mc[j],w*v1);
             if( (b_mc>9)&&(b_mc<17) )
-                profile[2]->Fill(pt_mc[j],w*cos(phi_mc-phiEP_mc));
+                profile[2]->Fill(pt_mc[j],w*v1);
        }
-       if( i==0 )
-           cout<<"<"<<flush;
-       if( 20*i/N > progress )
-       {
-           cout<<"="<<flush;
-       }
-       if( i==N-1 )
-           cout<<">"<<endl;
-       progress = 20*i/N;
+       this->ShowProgress(i,N);
    }
    TFile* out_file = new TFile("histograms.root","recreate");
    out_file->cd();
@@ -67,21 +59,18 @@ Float_t merged::GetAngleZDC(Int_t j)
     {
         y = 45;
         x = (j-2)*15;
-//        cout << j << " " << x << " " << y << " " << atan2(y,x)*180/3.14 <<endl;
         return atan2(y,x);
     }
     else if ((j>=5) && (j<=39))
     {
         y = (3-(j+2)/7)*15; 
         x = (3-(j+2)%7)*15;
-//        cout << j << " " << x << " " << y << " " << atan2(y,x)*180/3.14 <<endl;
         return atan2(y,x);
     }
     else if ((j>=40) && (j<=44))
     {
         y = -45; 
         x = (j-42)*15;
-//        cout << j << " " << x << " " << y << " " << atan2(y,x)*180/3.14 <<endl;
         return atan2(y,x);
     }
     return -1000;
@@ -152,4 +141,36 @@ Float_t merged::GetY(Int_t j, Float_t m, Bool_t is_mpd)
 Float_t merged::GetV1(Float_t phi, Float_t phiEP)
 {
     return cos(phi-phiEP);
+}
+void merged::ShowProgress(Int_t i, Int_t N)
+{
+    Float_t barsize=50;
+    Int_t progress = barsize*i/N;
+    if(i == 0)
+    {
+        cout << "[" << flush;
+        for(int j=0;j<barsize-2;j++)
+            cout << "." << flush;
+        cout << "]" << flush;
+    }
+    if( (i!=0)&&(i!=N) )
+    {
+        for(int j=0;j<barsize;j++)
+            cout<<"\r"<<flush;
+        cout << "[" <<flush;
+        for(int j=0;j<=progress;j++)
+            cout<<"#"<<flush;
+        for(int j=0;j<barsize-progress-2;j++)
+            cout<<"."<<flush;
+        cout<<"]"<<flush;
+    }
+    if( i==N )
+    {
+        for(int j=0;j<barsize;j++)
+            cout<<"\r"<<flush;
+        cout << "[" << flush;
+        for(int j=0;j<barsize-2;j++)
+            cout<<"#"<<flush;
+        cout<<"]"<<endl;
+    }
 }
