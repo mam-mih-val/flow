@@ -12,61 +12,104 @@ void merged::Loop(Int_t pdg)
    // y vs v1, mc
    for(int i=0;i<3;i++)
    {
-       Int_t b = i%3
-       profile[i] = new TProfile(Form("centrality %i",b),Form("y vs v1, for %i, mc, centrality %i",pdg,b),8, -1, 1);
+       Int_t b = i%3;
+       profile[i] = new TProfile(Form("y vs v1, mc, centrality %i",b),Form("y vs v1, for %i, mc, centrality %i",pdg,b),8, -1, 1);
    }
    // y vs v1, mpd
    for(int i=3;i<6;i++)
    {
-       Int_t b = i%3
-       profile[i] = new TProfile(Form("centrality %i",b),Form("y vs v1, for %i, mpd, centrality %i",pdg,b),8, -1, 1);
+       Int_t b = i%3;
+       profile[i] = new TProfile(Form("y vs v1, mpd, centrality %i",b),Form("y vs v1, for %i, mpd, centrality %i",pdg,b),8, -1, 1);
    }
    // pt vs v1, mc
    for(int i=6;i<9;i++)
    {
-       Int_t b = i%3
-       profile[i] = new TProfile(Form("centrality %i",b),Form("pt vs v1, for %i, mc, centrality %i",pdg,b),8, 0.2, 2);
+       Int_t b = i%3;
+       profile[i] = new TProfile(Form("pt vs v1, mc, centrality %i",b),Form("pt vs v1, for %i, mc, centrality %i",pdg,b),8, 0.2, 2);
    }
    // pt vs v1, mpd
    for(int i=9;i<12;i++)
    {
-       Int_t b = i%3
-       profile[i] = new TProfile(Form("centrality %i",b),Form("pt vs v1, for %i, mpd, centrality %i",pdg,b),8, 0.2, 2);
+       Int_t b = i%3;
+       profile[i] = new TProfile(Form("pt vs v1, mpd, centrality %i",b),Form("pt vs v1, for %i, mpd, centrality %i",pdg,b),8, 0.2, 2);
    }
+   
    Int_t N = fChain->GetEntries();
    for(int i=0;i<N;i++)
    {
        fChain->GetEntry(i);
        Float_t PsiEP = this->GetPsiEP();
-       for(Int_t j=0; j<n_tracks_mc;j++)
+       for(Int_t j=0; j<n_tracks_mc;j++) // mc-loop
        {
-            if( !this->Selector(-321,j,0) )
+            if( !this->Selector(pdg,j,0) )
                 continue;
-            Float_t m = 0.493;
-            Float_t y = this->GetY(j,m,0);
+            Float_t y = this->GetY(j,0);
             Float_t v1 = this->GetV1( atan2(py_mc[j],px_mc[j]), phiEP_mc );
             Float_t w=0;
-            if( (abs(y)<0.2) || (abs(y)>1.5) )
+            if(abs(y)>1.5)
                 continue;
             if(y>0)
                 w=1;
             if(y<0)
                 w=-1;
             if(b_mc<5)
-                profile[0]->Fill(pt_mc[j],w*v1);
+            {
+                if(abs(y) > 0.2 )
+                    profile[6]->Fill(pt_mc[j],w*v1);
+                profile[0]->Fill(y,v1);
+            }
             if( (b_mc>5)&&(b_mc<9) )
-                profile[1]->Fill(pt_mc[j],w*v1);
+            {
+                if(abs(y) > 0.2 )
+                    profile[7]->Fill(pt_mc[j],w*v1);
+                profile[1]->Fill(y,v1);
+            }
             if( (b_mc>9)&&(b_mc<17) )
-                profile[2]->Fill(pt_mc[j],w*v1);
+            {
+                if(abs(y) > 0.2 )
+                    profile[8]->Fill(pt_mc[j],w*v1);
+                profile[2]->Fill(y,v1);
+            }
        }
+        for(Int_t j=0; j<n_tracks_mpd;j++) // mpd-loop
+        {
+            if( !this->Selector(pdg,j,1) )
+                continue;
+            Float_t y = this->GetY(j,1);
+            Float_t v1 = this->GetV1( phi_mpd[j], PsiEP );
+            Float_t w=0;
+            if(abs(y)>1.5)
+                continue;
+            if(y>0)
+                w=1;
+            if(y<0)
+                w=-1;
+            if(b_mc<5)
+            {
+                if(abs(y) > 0.2 )
+                    profile[9]->Fill(pt_mc[j],w*v1);
+                profile[3]->Fill(y,v1);
+            }
+            if( (b_mc>5)&&(b_mc<9) )
+            {
+                if(abs(y) > 0.2 )
+                    profile[10]->Fill(pt_mc[j],w*v1);
+                profile[4]->Fill(y,v1);
+            }
+            if( (b_mc>9)&&(b_mc<17) )
+            {
+                if(abs(y) > 0.2 )
+                    profile[11]->Fill(pt_mc[j],w*v1);
+                profile[5]->Fill(y,v1);
+            }
+        }
        this->ShowProgress(i,N);
    }
-   TFile* out_file = new TFile("histograms.root","recreate");
+   TFile* out_file = new TFile(Form("flow_%i.root",pdg),"recreate");
    out_file->cd();
    gStyle->SetOptStat(0);
-   profile[0]->Write();
-   profile[1]->Write();
-   profile[2]->Write();
+   for(int i=0; i<12; i++)
+       profile[i]->Write();
    out_file->Close();
 
 
@@ -141,10 +184,11 @@ Float_t merged::GetPsiEP()
     }
     return atan2(Qy,Qx);
 }
-Float_t merged::GetY(Int_t j, Float_t m, Bool_t is_mpd)
+Float_t merged::GetY(Int_t j, Bool_t is_mpd)
 {
     if( is_mpd )
     {
+        Float_t m = mass_mc[ id_from_mc_mpd[j] ];
         Float_t pt = abs(signed_pt_mpd[j]);
         Float_t coshn = cosh(eta_mpd[j]), sinhn = sinh(eta_mpd[j]);
         Float_t y = log( sqrt(m*m+pt*pt*coshn*coshn) + pt*sinhn ) - 0.5*log( m*m+pt*pt );

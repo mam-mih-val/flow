@@ -145,7 +145,7 @@ public :
    virtual Float_t  GetAngleZDC(Int_t j);
    virtual Bool_t   Selector(Int_t pdg, Int_t j, Bool_t is_mpd);
    virtual Float_t  GetPsiEP();
-   virtual Float_t  GetY(Int_t j, Float_t m, Bool_t is_mpd);
+   virtual Float_t  GetY(Int_t j, Bool_t is_mpd);
    virtual Float_t  GetV1(Float_t phi, Float_t phiEP);
    virtual void     ShowProgress(Int_t i, Int_t N);
 };
