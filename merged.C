@@ -87,19 +87,19 @@ void merged::Loop(Int_t pdg)
             if(b_mc<5)
             {
                 if(abs(y) > 0.2 )
-                    profile[9]->Fill(pt_mc[j],w*v1);
+                    profile[9]->Fill(abs(signed_pt_mpd[j]),w*v1);
                 profile[3]->Fill(y,v1);
             }
             if( (b_mc>5)&&(b_mc<9) )
             {
                 if(abs(y) > 0.2 )
-                    profile[10]->Fill(pt_mc[j],w*v1);
+                    profile[10]->Fill(abs(signed_pt_mpd[j]),w*v1);
                 profile[4]->Fill(y,v1);
             }
             if( (b_mc>9)&&(b_mc<17) )
             {
                 if(abs(y) > 0.2 )
-                    profile[11]->Fill(pt_mc[j],w*v1);
+                    profile[11]->Fill(abs(signed_pt_mpd[j]),w*v1);
                 profile[5]->Fill(y,v1);
             }
         }
