@@ -5,16 +5,35 @@
 #include <TCanvas.h>
 #include <TMath.h>
 
-void merged::Loop()
+void merged::Loop(Int_t pdg)
 {
    if (fChain == 0) return;
-   TProfile* profile[3];
-   profile[0] = new TProfile("0<b_mc<5","0<b_mc<5, mpd",8,0.2,2,-1,1); // mpd
-   profile[1] = new TProfile("5<b_mc<9","5<b_mc<9, mpd",8,0.2,2,-1,1); // mpd
-   profile[2] = new TProfile("9<b_mc<17","9<b_mc<17, mpd",8,0.2,2,-1,1); // mpd
-
+   TProfile* profile[12];
+   // y vs v1, mc
+   for(int i=0;i<3;i++)
+   {
+       Int_t b = i%3
+       profile[i] = new TProfile(Form("centrality %i",b),Form("y vs v1, for %i, mc, centrality %i",pdg,b),8, -1, 1);
+   }
+   // y vs v1, mpd
+   for(int i=3;i<6;i++)
+   {
+       Int_t b = i%3
+       profile[i] = new TProfile(Form("centrality %i",b),Form("y vs v1, for %i, mpd, centrality %i",pdg,b),8, -1, 1);
+   }
+   // pt vs v1, mc
+   for(int i=6;i<9;i++)
+   {
+       Int_t b = i%3
+       profile[i] = new TProfile(Form("centrality %i",b),Form("pt vs v1, for %i, mc, centrality %i",pdg,b),8, 0.2, 2);
+   }
+   // pt vs v1, mpd
+   for(int i=9;i<12;i++)
+   {
+       Int_t b = i%3
+       profile[i] = new TProfile(Form("centrality %i",b),Form("pt vs v1, for %i, mpd, centrality %i",pdg,b),8, 0.2, 2);
+   }
    Int_t N = fChain->GetEntries();
-   Int_t progress = 0;
    for(int i=0;i<N;i++)
    {
        fChain->GetEntry(i);
