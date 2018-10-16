@@ -153,20 +153,34 @@ public :
 #endif
 
 #ifdef merged_cxx
-merged::merged(TTree *tree) : fChain(0) 
+merged::merged(TTree *tree) : fChain(0)
 {
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("merged_0.root");
+
+#ifdef SINGLE_TREE
+      // The following code should be used if you want this class to access
+      // a single tree instead of a chain
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("Memory Directory");
       if (!f || !f->IsOpen()) {
-         f = new TFile("merged_0.root");
+         f = new TFile("Memory Directory");
       }
       f->GetObject("cbmsim_reduced",tree);
+
+#else // SINGLE_TREE
+
+      // The following code should be used if you want this class to access a chain
+      // of trees.
+      TChain * chain = new TChain("cbmsim_reduced","");
+      chain->Add("~/peter_task/merged_*.root");
+      tree = chain;
+#endif // SINGLE_TREE
 
    }
    Init(tree);
 }
+
 
 merged::~merged()
 {
